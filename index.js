@@ -24,6 +24,8 @@ let command = argv._[0];
 
 if (command === 'help') {
   help.print();
+} else if (command === 'clear-apps') {
+  gen.clear();
 } else {
   clear();
   console.log(

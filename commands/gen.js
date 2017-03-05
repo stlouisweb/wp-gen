@@ -87,5 +87,10 @@ building you shiny new app. Shall we begin?...
       dockerHelper.startDocker(answers); // starts docker-compose in app directory, this will create and populate wp-data dir.
       createPlugin(); // creates the plugin directory and adds the plugin boilerplate file.
     });
+  },
+  clear: function() {
+    var prefs = new Preferences('io.stlws.wpgen');
+    prefs.appList = [];
+    console.log('cleared the apps list.');
   }
 };
