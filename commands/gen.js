@@ -1,6 +1,9 @@
 const files     = require('../lib/files'),
       fs        = require('fs'),
       path      = require('path'),
+      Preferences  = require('preferences'),
+      genHelper  = require('../lib/genHelper'),
+      dockerHelper  = require('../lib/dockerHelper'),
       inquirer  = require('inquirer');
 var questions = [
   {
@@ -67,16 +70,6 @@ var questions = [
   },
 ];
 
-function createAppDir(app, dir) {
-  var appDir = dir + '/' + app
-  fs.mkdirSync(appDir);
-  console.log(path.join(__dirname, '..'));
-  var dockerComposeFile = path.join(__dirname, '..', 'data/docker-compose.yml');
-  console.log(dockerComposeFile);
-  fs.createReadStream(dockerComposeFile).pipe(fs.createWriteStream(appDir + '/docker-compose.yml'));
-  return appDir;
-}
-
 module.exports = {
   print: function() {
     console.log(`
@@ -88,9 +81,10 @@ building you shiny new app. Shall we begin?...
 ********************************************************************************
       `);
     inquirer.prompt(questions).then(function(answers) {
-      console.log(answers);
-      var appDir = createAppDir(answers.name, answers.directory); // creates the directory with docker-compose.yml in it
-      startDocker(appDir); // starts docker-compose in app directory, this will create and populate wp-data dir.
+      genHelper.registerApp(answers);
+
+      var appDir = genHelper.createAppDir(answers); // creates the directory with docker-compose.yml in it
+      dockerHelper.startDocker(answers); // starts docker-compose in app directory, this will create and populate wp-data dir.
       createPlugin(); // creates the plugin directory and adds the plugin boilerplate file.
     });
   }
