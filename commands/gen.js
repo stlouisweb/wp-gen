@@ -1,6 +1,8 @@
 const files     = require('../lib/files'),
       fs        = require('fs'),
       path      = require('path'),
+      CLI          = require('clui'),
+      Spinner      = CLI.Spinner,
       Preferences  = require('preferences'),
       genHelper  = require('../lib/genHelper'),
       dockerHelper  = require('../lib/dockerHelper'),
@@ -81,11 +83,27 @@ building you shiny new app. Shall we begin?...
 ********************************************************************************
       `);
     inquirer.prompt(questions).then(function(answers) {
+      // storing the app information
       genHelper.registerApp(answers);
+      // creating the project folder and docker configuration
+      var appDir = genHelper.createAppDir(answers);
+      // starting the docker containers
+      dockerHelper.startDocker(answers);
+      // polling the app on the configured http port
 
-      var appDir = genHelper.createAppDir(answers); // creates the directory with docker-compose.yml in it
-      dockerHelper.startDocker(answers); // starts docker-compose in app directory, this will create and populate wp-data dir.
-      createPlugin(); // creates the plugin directory and adds the plugin boilerplate file.
+      var status = new Spinner('Starting the application, please wait...');
+      status.start();
+      var isItUp = dockerHelper.pollWebContainer()
+      .then(function() {
+        status.stop();
+          console.log('App is up :)')
+      })
+      .catch(function() {
+        status.stop();
+        console.log('POLLING FAILED - App is down :(');
+      })
+
+      //createPlugin(); // creates the plugin directory and adds the plugin boilerplate file.
     });
   },
   clear: function() {
